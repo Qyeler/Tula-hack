@@ -56,9 +56,10 @@ def process_yandex_link(message):
 def process_aliexpress_link(message):
     bot.send_message(message.chat.id,"Это Алиэкспресс")
 def process_title(message):
-    if(message=="/help"):
-        print("Блин надо сделать хельп")
-    bot.send_message(message.chat.id,"Это название товара надопробить по всем базам")
+    if(message.text=="/help"):
+        bot.send_message(message.chat.id,("Блин надо сделать хельп"))
+    else:
+        bot.send_message(message.chat.id,"Это название товара надопробить по всем базам")
 
 
 if __name__ == '__main__':
