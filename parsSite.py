@@ -17,4 +17,10 @@ def ctlpars(HTML):
         end = text.find('"', strt+1)
         price = text[strt:end]
         fl["answer"].append({"name":name, "link":link, "price":price})
+
     return(fl)
+
+def ozonpars(HTML):
+    return(0)
+def pritserupars(HTML):
+    return (0)

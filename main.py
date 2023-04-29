@@ -2,7 +2,7 @@ import telebot
 import seleniumReal
 from telebot import types
 
-from parsSite import ctlpars
+from parsSite import ctlpars, ozonpars, pritserupars
 
 bot = telebot.TeleBot("6163085124:AAFcH7JLOfSmFTi8WmdhwdodlssgeVi3Z_Q")
 
@@ -10,7 +10,7 @@ bot = telebot.TeleBot("6163085124:AAFcH7JLOfSmFTi8WmdhwdodlssgeVi3Z_Q")
 def start_handler(message):
     # создаем клавиатуру с inline-кнопками
     markup = types.InlineKeyboardMarkup()
-    btn_wildberries = types.InlineKeyboardButton('Wildberries', url='https://www.wildberries.ru/')
+    btn_wildberries = types.InlineKeyboardButton('Citilink', url='https://www.citilink.ru/')
     btn_ozon = types.InlineKeyboardButton('Ozon', url='https://www.ozon.ru/')
     btn_yandex_market = types.InlineKeyboardButton('Yandex Market', url='https://market.yandex.ru/')
     btn_aliexpress = types.InlineKeyboardButton('Aliexpress', url='https://aliexpress.ru/')
@@ -53,17 +53,48 @@ def process_link(message,name_company):
         case "ali":
             print("Это товар с aliex")
         case "stl":
-            print("Это товар с sitilink")
+            print("Это товар с ctln")
 
 def process_title(message):
     if(message.text=="/help"):
-        bot.send_message(message.chat.id,("Блин надо сделать хельп"))
+        bot.send_message(message.chat.id,("В данный момент реализованн функционал:\n"
+                                          "\n 1) Напишите название товара, мы пробьем его по базам и покажем каике ценники мы смогли найти\n"
+                                          "\nПод базой данных мы имеем ввиду сайты: citilink,\n"
+                                          "Этот список будет пополняться\n"
+                                          "\n Разработкой бота занималась команда Тульский пряник\n Контактный email: nikitanaz12@gmail.com"))
     else:
         bot.send_message(message.chat.id,"Ищу название товара в базах...")
-        HTML=seleniumReal.getHTML("https://www.citilink.ru/search/?text="+message.text)
-        ansDict=ctlpars(HTML)
+        ansDict=findAns(message.text)
         for i in ansDict['answer']:
-            bot.send_message(message.chat.id, "Название: "+i["name"][0:36]+"\n"+ "Стоимость: "+ i["price"]+"\n"+"Ссылка на товар:\n"+i["link"]+"\n")
+            if i['price']<0 or i['price']==None:
+                bot.send_message("Товар не найден\n")
+            bot.send_message(message.chat.id, "Название: "+i["name"][0:36]+"\n"+ "Стоимость: "+ i["price"]+"\n"+"Ссылка на товар:\n"+i["link"]+"\n",disable_web_page_preview=True)
+        bot.send_message(message.chat.id,"Если хотите отслеживать товар перешлите нам сообщение с интересующим вас предложением\n")
+
+def findAns(name):
+    arr={}
+    sites=["https://www.citilink.ru/search/?text=","https://www.ozon.ru/search/?text=","https://price.ru/search/?query="]
+    for i in sites:
+        HTML = seleniumReal.getHTML(i + name)
+        match(i[0:23]):
+            case("https://www.citilink.ru"):
+                arr.append(ctlpars(HTML))
+            case("https://www.ozon.ru/sea"):
+                arr.append(ozonpars(HTML))
+            case("https://price.ru/search"):
+                arr.append(pritserupars(HTML))
+    answer=[] #{"answer":{"price":"","link":""}}
+    for i in arr:
+        for j in i["answer"]:
+            if(len(answer)<10):
+                answer.append(j)
+            else:
+                for _ in range(10):#Здесь можно исполльзовать че-нибудь сортированное, но сейчас 12 ночи...
+                    if(j["price"]<int(answer["answer"]["price"])):
+                        answer[_]["answer"] = j
+
+
+    ctlpars(HTML)
 
 if __name__ == '__main__':
     bot.polling(none_stop=True)

@@ -6,18 +6,9 @@ from scrapingbee import ScrapingBeeClient
 import requests
 import chardet
 
-client = ScrapingBeeClient(api_key='1OPDXF9D1ZX7YY0D1B87KZETIX9S4BBCZGM01SQBP3Q13HZTU6F4EFJ1CI2VE7MJK5G5IBPRWKX63IPY')
+client = ScrapingBeeClient(api_key='JOYURIUORBC4I6128F9V8FKVF39MNOL65A06MPOJE5B6MADSLOFSQI9MDYXWQPV0XQYU48DX3P6J5U5O')
 def getHTML(URL):
-    URL='https://market.yandex.ru/search?cvredirect=1&searchContext=&text=iphone+13&suggest_reqid=759213224166835892464853299797782'
-    '''
-    if(URL[0:31]=='https://www.citilink.ru/search/'):
-        f = open('test.txt', 'w', encoding='utf-8')
-        response = requests.get(URL)
-        html = response.text
-        f.write(html)
-        return(html)
-    else:
-    '''
+    URL='https://market.yandex.ru/search?cvredirect=1&searchContext=&text=iphone+14&suggest_reqid=759213224166835892405885879951824'
     response = client.get(
         URL,
         params={
@@ -25,7 +16,7 @@ def getHTML(URL):
             "stealth_proxy": "true",
             "return_page_source": "true",
             "block_ads": "false",
-            'block_resources' : 'False',
+            'block_resources' : 'false',
             "premium_proxy": "true",
             "json_response": "true",
             'country_code':'ru'
