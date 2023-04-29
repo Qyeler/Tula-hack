@@ -2,16 +2,6 @@ import telebot
 from telebot import types
 bot = telebot.TeleBot("6163085124:AAFcH7JLOfSmFTi8WmdhwdodlssgeVi3Z_Q")
 
-# @bot.message_handler(commands=['start'])
-# def start_handler(message):
-#     bot.send_message(message.chat.id, "Привет, я бот команды <Тульский пряник>, рад тебя видеть! "
-#                                       "Я могу помочь тебе отслеживать цены на товары. Введи название товара или ссылку на него, чтобы начать."
-#                                       "Мы пока что поддерживаем товары только c этих сайтов\n"
-#                                       "Wildberries\n"
-#                                       "Ozon\n"
-#                                       "Aliexpress\n"
-#                                       "Yandex_market\n"
-#                                       "Более подробно можно узнать командой /help")
 @bot.message_handler(commands=['start'])
 def start_handler(message):
     # создаем клавиатуру с inline-кнопками
