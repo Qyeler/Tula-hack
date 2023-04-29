@@ -1,5 +1,9 @@
 import telebot
+import seleniumReal
 from telebot import types
+
+from parsSite import ctlpars
+
 bot = telebot.TeleBot("6163085124:AAFcH7JLOfSmFTi8WmdhwdodlssgeVi3Z_Q")
 
 @bot.message_handler(commands=['start'])
@@ -27,31 +31,39 @@ def start_handler(message):
 def message_handler(message):
     text = message.text.lower()
     if text.startswith("https://www.wildberries.ru/catalog/"):
-        process_wildberries_link(message)
+        process_link(message,"wld")
     elif text.startswith("https://www.ozon.ru/product/"):
-        process_ozon_link(message)
+        process_link(message,"ozn")
     elif text.startswith("https://market.yandex.ru/product-"):
-        process_yandex_link(message)
+        process_link(message,"ydx")
     elif text.startswith("https://aliexpress.ru/item/"):
-        process_aliexpress_link(message)
+        process_link(message,"ali")
     else:
         process_title(message)
 
-def process_wildberries_link(message):
-    bot.send_message(message.chat.id, "Это Вайлберис товар")
-def process_ozon_link(message):
-    bot.send_message(message.chat.id,"Это Озон товар")
-def process_yandex_link(message):
-    bot.send_message(message.chat.id,"Это Яндекс товар")
-def process_aliexpress_link(message):
-    bot.send_message(message.chat.id,"Это Алиэкспресс")
+def process_link(message,name_company):
+    bot.send_message(message.chat.id, "Это ссылка на товар")
+    match name_company:
+        case "wld":
+            print("Это товар с wildb")
+        case "ozn":
+            print("Это товар с ozon")
+        case "ydx":
+            print("Это товар с yandexMrk")
+        case "ali":
+            print("Это товар с aliex")
+        case "stl":
+            print("Это товар с sitilink")
+
 def process_title(message):
     if(message.text=="/help"):
         bot.send_message(message.chat.id,("Блин надо сделать хельп"))
     else:
-        bot.send_message(message.chat.id,"Это название товара надопробить по всем базам")
-
+        bot.send_message(message.chat.id,"Ищу название товара в базах...")
+        HTML=seleniumReal.getHTML("https://www.citilink.ru/search/?text="+message.text)
+        ansDict=ctlpars(HTML)
+        for i in ansDict['answer']:
+            bot.send_message(message.chat.id, "Название: "+i["name"][0:36]+"\n"+ "Стоимость: "+ i["price"]+"\n"+"Ссылка на товар:\n"+i["link"]+"\n")
 
 if __name__ == '__main__':
-
     bot.polling(none_stop=True)
