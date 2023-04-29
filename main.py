@@ -65,36 +65,44 @@ def process_title(message):
     else:
         bot.send_message(message.chat.id,"Ищу название товара в базах...")
         ansDict=findAns(message.text)
-        for i in ansDict['answer']:
-            if i['price']<0 or i['price']==None:
-                bot.send_message("Товар не найден\n")
+        for i in ansDict:
             bot.send_message(message.chat.id, "Название: "+i["name"][0:36]+"\n"+ "Стоимость: "+ i["price"]+"\n"+"Ссылка на товар:\n"+i["link"]+"\n",disable_web_page_preview=True)
         bot.send_message(message.chat.id,"Если хотите отслеживать товар перешлите нам сообщение с интересующим вас предложением\n")
 
 def findAns(name):
-    arr={}
-    sites=["https://www.citilink.ru/search/?text=","https://www.ozon.ru/search/?text=","https://price.ru/search/?query="]
+    arr={"answer":[]}
+    sites=["https://www.citilink.ru/search/?text=","https://price.ru/search/?query="]#,"https://www.ozon.ru/search/?text=",]
     for i in sites:
         HTML = seleniumReal.getHTML(i + name)
         match(i[0:23]):
             case("https://www.citilink.ru"):
-                arr.append(ctlpars(HTML))
+                for k in ctlpars(HTML):
+                    arr["answer"].append(k)
             case("https://www.ozon.ru/sea"):
-                arr.append(ozonpars(HTML))
+                for k in ozonpars(HTML):
+                    arr["answer"].append(k)
             case("https://price.ru/search"):
-                arr.append(pritserupars(HTML))
-    answer=[] #{"answer":{"price":"","link":""}}
-    for i in arr:
-        for j in i["answer"]:
-            if(len(answer)<10):
-                answer.append(j)
-            else:
-                for _ in range(10):#Здесь можно исполльзовать че-нибудь сортированное, но сейчас 12 ночи...
-                    if(j["price"]<int(answer["answer"]["price"])):
-                        answer[_]["answer"] = j
+                for k in pritserupars(i + name):
+                    arr["answer"].append(k)
+    #[{"price":"","link":"","name":""}]
+    arr["answer"].sort(key=lambda x:int(x['price']))
+    answer = arr["answer"][:10]
+    '''
+    for i in arr["answer"]:
+        if(len(answer)<10):
+            answer.append(i)
+        else:
+            for _ in range(10):#Здесь можно исполльзовать че-нибудь сортированное, но сейчас 12 ночи...
+                if(int(i["price"])<int(answer[_]["price"])):
+                    answer[_] = i
+    '''
+    return(answer)
 
-
-    ctlpars(HTML)
+@bot.message_handler(func=lambda message: message.forward_from is not None)
+def handle_forwarded_message(message):
+    forwarded_message = message.forward_from
+    original_text = forwarded_message.text
+    print(original_text)
 
 if __name__ == '__main__':
     bot.polling(none_stop=True)

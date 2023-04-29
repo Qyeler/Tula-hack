@@ -25,7 +25,7 @@ def get_all_objects():
     cursor = conn.execute('SELECT name FROM objects')
     rows = cursor.fetchall()
     return [row[0] for row in rows]
-
+'''
 insert_or_update_object('object1', "1,2,3", 10)
 insert_or_update_object('object2', "4,5,6", 20)
 
@@ -35,3 +35,4 @@ print(get_object_data('object2')) # {'name': 'object2', 'avg': [4, 5, 6], 'minco
 print(get_all_objects()) # ['object1', 'object2']
 
 conn.close()
+'''

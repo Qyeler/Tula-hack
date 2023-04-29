@@ -11,4 +11,5 @@ def getHTML(URL):
     driver.quit()
     return(html)
 
+#getHTML("https://www.ozon.ru/search/?from_global=true&text=браслет")
 
