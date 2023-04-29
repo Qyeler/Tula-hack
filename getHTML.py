@@ -1,8 +1,10 @@
 #  Install the Python ScrapingBee library:
 # `pip install scrapingbee`
+import codecs
+
 from scrapingbee import ScrapingBeeClient
 
-client = ScrapingBeeClient(api_key='5YXRIIN5991ZNAPP091D2F26E4FZO0DCJFMWLIQZRI8PNX9BOPG4K7TPJ6R6GT6ROI56CL1VW9EP8Q8H')
+client = ScrapingBeeClient(api_key='1OPDXF9D1ZX7YY0D1B87KZETIX9S4BBCZGM01SQBP3Q13HZTU6F4EFJ1CI2VE7MJK5G5IBPRWKX63IPY')
 def getHTML(URL):
     URL='https://market.yandex.ru/search?cvredirect=1&searchContext=&text=iphone+13'
     response = client.get(
@@ -11,7 +13,8 @@ def getHTML(URL):
             "screenshot": "true",
             "wait": "10",
             "return_page_source": "true",
-            "block_ads": "true",
+            "block_ads": "false",
+            'block_resources' : 'False',
             "premium_proxy": "true",
             "json_response": "true",
             'country_code':'ru'
@@ -21,7 +24,12 @@ def getHTML(URL):
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 YaBrowser/23.3.3.719 Yowser/2.5 Safari/537.36',
         }
     )
+    f = open('test.txt', 'wb')
+    f.write(response.content)
+    print('Response HTTP Status Code: ', response.status_code)
     if(response.status_code==200):
-        print('Response HTTP Response Body: ', response.content)
+        return(response.content)
     else:
-        print("ERROR")
+        return(-1)
+
+getHTML("dsad")
