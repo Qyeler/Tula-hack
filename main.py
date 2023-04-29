@@ -59,31 +59,47 @@ def process_title(message):
     if(message.text=="/help"):
         bot.send_message(message.chat.id,("В данный момент реализованн функционал:\n"
                                           "\n 1) Напишите название товара, мы пробьем его по базам и покажем каике ценники мы смогли найти\n"
-                                          "\nПод базой данных мы имеем ввиду сайты: citilink,\n"
+                                          "\n 2) Перешлите сообщение с товаром, который вас заинтересовал, чтобы добавить его отслеживание в личный кабинет\n"
+                                          "\n 3) Отправьте команду /profile, чтобы получить информацию о товарах, которые вы пересылали\n"
+                                          "\nПод базой данных мы имеем ввиду сайты: citilink, ozon, price_ru\n"
                                           "Этот список будет пополняться\n"
                                           "\n Разработкой бота занималась команда Тульский пряник\n Контактный email: nikitanaz12@gmail.com"))
     else:
-        bot.send_message(message.chat.id,"Ищу название товара в базах...")
+        if (len(message.text) <= 5):
+            bot.send_message(message.chat.id, ("Вы ввели данные, по которым мы не можем реализовать поиск=("))
+            return
+        bot.send_message(message.chat.id,"Ищу название товара в базах ожидание может занять от 1-4 минут...\n"
+                                         "Если хотите отслеживать товар перешлите нам сообщение с интересующим вас предложением\n")
         ansDict=findAns(message.text)
+        if(len(ansDict)==0):
+            bot.send_message(message.chat.id,"Извините, я не смог ничего найти по вашему запросу...")
         for i in ansDict:
-            bot.send_message(message.chat.id, "Название: "+i["name"][0:36]+"\n"+ "Стоимость: "+ i["price"]+"\n"+"Ссылка на товар:\n"+i["link"]+"\n",disable_web_page_preview=True)
+            markup = types.InlineKeyboardMarkup()
+            btn_tmp = types.InlineKeyboardButton('Ссылка на товар', url=i["link"])
+            markup.row(btn_tmp)
+            bot.send_message(message.chat.id, "Название: "+str(i["name"][0]).upper()+i["name"][1:]+"\n"+ "Стоимость: "+ i["price"]+"₽\n",disable_web_page_preview=True,reply_markup=markup)
         bot.send_message(message.chat.id,"Если хотите отслеживать товар перешлите нам сообщение с интересующим вас предложением\n")
 
 def findAns(name):
+    name=str(name).lower()
     arr={"answer":[]}
-    sites=["https://www.citilink.ru/search/?text=","https://price.ru/search/?query="]#,"https://www.ozon.ru/search/?text=",]
+    sites=["https://www.citilink.ru/search/?text=","https://price.ru/search/?query=","https://www.ozon.ru/search/?text="]
     for i in sites:
         HTML = seleniumReal.getHTML(i + name)
         match(i[0:23]):
             case("https://www.citilink.ru"):
                 for k in ctlpars(HTML):
-                    arr["answer"].append(k)
+                    if k['name'].find(name.split()[0]):
+                        arr["answer"].append(k)
             case("https://www.ozon.ru/sea"):
+                HTML = seleniumReal.getHTML(i + name)
                 for k in ozonpars(HTML):
-                    arr["answer"].append(k)
+                    if k['name'].find(name.split()[0]):
+                        arr["answer"].append(k)
             case("https://price.ru/search"):
                 for k in pritserupars(i + name):
-                    arr["answer"].append(k)
+                    if k['name'].find(name.split()[0]):
+                        arr["answer"].append(k)
     #[{"price":"","link":"","name":""}]
     arr["answer"].sort(key=lambda x:int(x['price']))
     answer = arr["answer"][:10]
