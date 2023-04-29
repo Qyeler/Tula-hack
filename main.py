@@ -1,21 +1,22 @@
 import telebot
 import seleniumReal
 from telebot import types
-
 from parsSite import ctlpars, ozonpars, pritserupars
 
 bot = telebot.TeleBot("6163085124:AAFcH7JLOfSmFTi8WmdhwdodlssgeVi3Z_Q")
 
+@bot.message_handler(func=lambda message: message.reply_to_message is not None)
+def reply_handler(message):
+    bot.send_message(message.chat.id,"Ес")
 @bot.message_handler(commands=['start'])
 def start_handler(message):
     # создаем клавиатуру с inline-кнопками
     markup = types.InlineKeyboardMarkup()
     btn_wildberries = types.InlineKeyboardButton('Citilink', url='https://www.citilink.ru/')
     btn_ozon = types.InlineKeyboardButton('Ozon', url='https://www.ozon.ru/')
-    btn_yandex_market = types.InlineKeyboardButton('Yandex Market', url='https://market.yandex.ru/')
-    btn_aliexpress = types.InlineKeyboardButton('Aliexpress', url='https://aliexpress.ru/')
+    btn_yandex_market = types.InlineKeyboardButton('Yandex Market', url='https://price.ru/')
     markup.row(btn_wildberries, btn_ozon)
-    markup.row(btn_yandex_market, btn_aliexpress)
+    markup.row(btn_yandex_market)
 
     bot.send_message(message.chat.id, "Привет, я бот команды {Тульский пряник}, рад тебя видеть! "
                                       "\nВ мой функционал входит:\n"
@@ -27,7 +28,7 @@ def start_handler(message):
                                       "Мы пока что поддерживаем товары только c этих сайтов\n",
                      reply_markup=markup)
 
-@bot.message_handler(func=lambda message: True)
+@bot.message_handler(content_types=['text'])
 def message_handler(message):
     text = message.text.lower()
     if text.startswith("https://www.wildberries.ru/catalog/"):
@@ -113,12 +114,6 @@ def findAns(name):
                     answer[_] = i
     '''
     return(answer)
-
-@bot.message_handler(func=lambda message: message.forward_from is not None)
-def handle_forwarded_message(message):
-    forwarded_message = message.forward_from
-    original_text = forwarded_message.text
-    print(original_text)
 
 if __name__ == '__main__':
     bot.polling(none_stop=True)
