@@ -1,13 +1,18 @@
 import telebot
 import seleniumReal
 from telebot import types
+import functions
 from parsSite import ctlpars, ozonpars, pritserupars
+import sys
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 bot = telebot.TeleBot("6163085124:AAFcH7JLOfSmFTi8WmdhwdodlssgeVi3Z_Q")
 
-@bot.message_handler(func=lambda message: message.reply_to_message is not None)
-def reply_handler(message):
-    bot.send_message(message.chat.id,"Ес")
+@bot.message_handler(commands=['profile'])
+def profile_handler(message):
+
+    bot.send_message(message.chat.id, "Ваш профиль:\n"+functions.profile(message.chat.id)+"\n",disable_web_page_preview=True)
 @bot.message_handler(commands=['start'])
 def start_handler(message):
     # создаем клавиатуру с inline-кнопками
@@ -28,8 +33,20 @@ def start_handler(message):
                                       "Мы пока что поддерживаем товары только c этих сайтов\n",
                      reply_markup=markup)
 
-@bot.message_handler(content_types=['text'])
+
+@bot.message_handler(func=lambda message: message.reply_to_message is not None or message.forward_from is not None or message.forward_from_chat is not None)
+def reply_handler(message):
+    functions.add_user(message.chat.id)
+    text=str(message.text)
+    name=text[9:text.find("Стоимость:")-1]
+    cost=text[text.find('Стоимость:')+10:-1]
+    link=message.json['reply_markup']['inline_keyboard'][0][0]['url']
+    print(message.chat.id)
+    functions.add_item(name, cost, link, message.chat.id)
+    bot.send_message(message.chat.id,name+cost+link)
+@bot.message_handler(func=lambda message: True)
 def message_handler(message):
+    print(message.reply_to_message)
     text = message.text.lower()
     if text.startswith("https://www.wildberries.ru/catalog/"):
         process_link(message,"wld")
@@ -78,7 +95,7 @@ def process_title(message):
             markup = types.InlineKeyboardMarkup()
             btn_tmp = types.InlineKeyboardButton('Ссылка на товар', url=i["link"])
             markup.row(btn_tmp)
-            bot.send_message(message.chat.id, "Название: "+str(i["name"][0]).upper()+i["name"][1:]+"\n"+ "Стоимость: "+ i["price"]+"₽\n",disable_web_page_preview=True,reply_markup=markup)
+            bot.send_message(message.chat.id, "Название: "+str(i["name"][0]).upper()+i["name"][1:]+"\n"+ "Стоимость: "+ i["price"]+"₽\n",disable_web_page_preview=True,reply_markup=markup)#
         bot.send_message(message.chat.id,"Если хотите отслеживать товар перешлите нам сообщение с интересующим вас предложением\n")
 
 def findAns(name):

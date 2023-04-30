@@ -9,7 +9,7 @@ class User(SqlAlchemyBase):
     __tablename__ = 'users'
     id = sqlalchemy.Column(sqlalchemy.Integer,
                            primary_key=True, autoincrement=True)
-    telegram_id = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
+    telegram_id = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     items = sqlalchemy.Column(sqlalchemy.String)
     items_cost = sqlalchemy.Column(sqlalchemy.String)
 

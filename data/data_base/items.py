@@ -11,6 +11,6 @@ class Item(SqlAlchemyBase):
     id = sqlalchemy.Column(sqlalchemy.Integer,
                            primary_key=True, autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String)
-    minimal = sqlalchemy.Column(sqlalchemy.Float, nullable=True)
+    minimal = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     link = sqlalchemy.Column(sqlalchemy.String)
     user_list = sqlalchemy.Column(sqlalchemy.String)
