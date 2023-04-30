@@ -9,29 +9,36 @@ session = db_session.create_session()
 
 
 def update(current_cost):
+    current_cost = list(map(float, current_cost))
     session = db_session.create_session()
-    for item, i in enumerate(session.query(Item).all()):
-        item.minimal = min(current_cost[i], item.minimal)
+    for i,item in enumerate(session.query(Item).all()):
+        item.minimal = str(min(current_cost[i], float(item.minimal)))
     session.commit()
-
+    messages = []
     for user in session.query(User).all():
         message = ""
         costs = list(map(float, user.items_cost.split("|")))
-        for i in user.items.split('|'):
-            if i == '': continue
-            it = int(i)
+        for val, i in enumerate(user.items.split('|')):
+            if val == '': continue
+            it = int(val)
             item = session.query(Item).filter(Item.id == it).first()
-            if item.minimal < 0.95 * costs[it]:
+            if float(item.minimal) < 0.95 * costs[i]:
                 message += f"Акция! Товар {item.name} подешевел\n"
-
         # send telegram message #######################
         # if message:                                 #
         #     send_message(user.telegram_id, message) #
         ###############################################
+        if message:
+            messages.append([message, user.telegram_id])
     session.close()
-    return message
+    return messages
 
-
+def item_titles():
+    ans = []
+    session = db_session.create_session()
+    for item in session.query(Item).all():
+        ans.append(item.name)
+    return ans
 
 def profile(user_id):
     session = db_session.create_session()

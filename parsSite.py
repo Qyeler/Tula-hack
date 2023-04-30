@@ -141,3 +141,44 @@ def pritserupars(url):
         return {'name': [],
                 'price': [],
                 "link": []}
+def parswld(HTML):
+    text = HTML
+    fl = {"answer": []}
+    cnt = 0
+    strt = 0
+    end = 0
+    res = [i for i in range(len(text)) if text.startswith("product-card__wrapper", i)]
+    for i in res:
+        print(text.find('href="', i))
+        strt = text.find('href="', i) + 6
+        end = text.find('"', strt)
+
+        link = text[strt:end]
+
+        strt = text.find("price__lower-price", end) + 20
+        end = text.find("?", strt)
+        price = text[strt:end]
+        for j in range(len(price)):
+            if price[j] != " ":
+                price = price[j:]
+                break
+        price = "".join(price.split("&nbsp;"))
+        strt = text.find('"', text.find("product-card__name", end)) + 18
+        end = text.find('"', strt)
+        name = text[strt:end]
+        for j in range(len(name)):
+            if name[j] == ">":
+                name = name[j + 1:]
+                break
+        for j in range(len(name)):
+            if name[j] == "<":
+                name = name[:j]
+                break
+        fl["answer"].append({"name": name, "link": link, "price": price})
+    ret=[]
+    for i in range(len(fl['answer'])):
+        fl['answer'][i]['price'] = fl['answer'][i]['price'][0:price.find(" ") - 1]
+        while not str(fl['answer'][i]['price']).isdigit() and len(str(fl['answer'][i]['price']))!=0:
+            fl['answer'][i]['price'] = fl['answer'][i]['price'][0:-1]
+        ret.append((fl['answer'][i]))
+    return(ret)

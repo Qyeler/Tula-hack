@@ -1,18 +1,33 @@
+import random
+
 import telebot
 import seleniumReal
 from telebot import types
 import functions
-from parsSite import ctlpars, ozonpars, pritserupars
+from parsSite import ctlpars, ozonpars, pritserupars, parswld
 import sys
 import io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 bot = telebot.TeleBot("6163085124:AAFcH7JLOfSmFTi8WmdhwdodlssgeVi3Z_Q")
-
+admin_key="1055763032"
 @bot.message_handler(commands=['profile'])
 def profile_handler(message):
     bot.send_message(message.chat.id, "Ваш профиль:\n"+functions.profile(message.chat.id)+"\n",disable_web_page_preview=True,parse_mode="HTML")
 
+@bot.message_handler(commands=['update'])
+def profile_handler(message):
+    print(str(message.chat.id))
+    if(str(message.chat.id)==admin_key):
+        text=message.text.split()[1]
+        if(text=="fake"):
+            messages = functions.update(fake_update())
+        else:
+            messages=functions.update(min_for_updates())
+        for j in messages:
+            bot.send_message(j[1],j[0])
+    else:
+        bot.send_message(message.chat.id, "У вас нет прав")
 @bot.message_handler(commands=['delete'])
 def profile_handler(message):
     name_item=message.text.split(" ")[1]
@@ -114,7 +129,7 @@ def process_title(message):
 def findAns(name):
     name=str(name).lower()
     arr={"answer":[]}
-    sites=["https://www.ozon.ru/search/?text=","https://www.citilink.ru/search/?text=","https://price.ru/search/?query="],
+    sites=["https://www.ozon.ru/search/?text=","https://www.citilink.ru/search/?text=","https://price.ru/search/?query=","https://www.wildberries.ru/catalog/0/search.aspx?search="]
     for i in sites:
         match(i[0:23]):
             case("https://www.citilink.ru"):
@@ -131,10 +146,29 @@ def findAns(name):
                 for k in pritserupars(i + name):
                     if k['name'].find(name.split()[0]):
                         arr["answer"].append(k)
+            case("https://www.wildberries"):
+                HTML = seleniumReal.getHTML(i + name)
+                for k in parswld(HTML):
+                    print(k)
+                    if k['name'].find(name.split()[0]):
+                        arr["answer"].append(k)
     #[{"price":"","link":"","name":""}]
     arr["answer"].sort(key=lambda x:int(x['price']))
     answer = arr["answer"][:10]
     return(answer)
+
+def fake_update():
+    arr = functions.item_titles()
+    fake_arr=[]
+    for i in range(len(arr)):
+        fake_arr.append(5)
+    return(fake_arr)
+def min_for_updates():
+    arr= functions.item_titles()
+    updates=[]
+    for i in arr:
+        updates.append(findAns(str(i)[0]['price']))
+    return(updates)
 
 if __name__ == '__main__':
     bot.polling(none_stop=True)
