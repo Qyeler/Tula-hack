@@ -6,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from seleniumReal import getHTML
+from seleniumReal import getHTML, getHTMLozon
 
 
 def ctlpars(HTML):
@@ -77,7 +77,7 @@ def ozonpars(HTML):
     return(fl['answer'])
 
 def findprice(URL):
-    HTML=getHTML(URL)
+    HTML=getHTMLozon(URL)
     fst=HTML.find('class="nn8 n8n"><span>')
     scnd=HTML.find('</span>',fst)
     ans=HTML[fst+22:scnd-2]

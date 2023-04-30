@@ -11,15 +11,23 @@ bot = telebot.TeleBot("6163085124:AAFcH7JLOfSmFTi8WmdhwdodlssgeVi3Z_Q")
 
 @bot.message_handler(commands=['profile'])
 def profile_handler(message):
+    bot.send_message(message.chat.id, "Ваш профиль:\n"+functions.profile(message.chat.id)+"\n",disable_web_page_preview=True,parse_mode="HTML")
 
-    bot.send_message(message.chat.id, "Ваш профиль:\n"+functions.profile(message.chat.id)+"\n",disable_web_page_preview=True)
+@bot.message_handler(commands=['delete'])
+def profile_handler(message):
+    name_item=message.text.split(" ")[1]
+    if str(name_item).isdigit():
+        functions.delete_item(message.chat.id,name_item)
+        bot.send_message(message.chat.id, "Успешно")
+    else:
+        bot.send_message(message.chat.id, "Второй параметр не является числом")
 @bot.message_handler(commands=['start'])
 def start_handler(message):
     # создаем клавиатуру с inline-кнопками
     markup = types.InlineKeyboardMarkup()
     btn_wildberries = types.InlineKeyboardButton('Citilink', url='https://www.citilink.ru/')
     btn_ozon = types.InlineKeyboardButton('Ozon', url='https://www.ozon.ru/')
-    btn_yandex_market = types.InlineKeyboardButton('Yandex Market', url='https://price.ru/')
+    btn_yandex_market = types.InlineKeyboardButton('Price ru', url='https://price.ru/')
     markup.row(btn_wildberries, btn_ozon)
     markup.row(btn_yandex_market)
 
@@ -37,13 +45,14 @@ def start_handler(message):
 @bot.message_handler(func=lambda message: message.reply_to_message is not None or message.forward_from is not None or message.forward_from_chat is not None)
 def reply_handler(message):
     functions.add_user(message.chat.id)
-    text=str(message.text)
-    name=text[9:text.find("Стоимость:")-1]
-    cost=text[text.find('Стоимость:')+10:-1]
-    link=message.json['reply_markup']['inline_keyboard'][0][0]['url']
-    print(message.chat.id)
-    functions.add_item(name, cost, link, message.chat.id)
-    bot.send_message(message.chat.id,name+cost+link)
+    try:
+        text=str(message.text)
+        name=text[9:text.find("Стоимость:")-1]
+        cost=text[text.find('Стоимость:')+10:-1]
+        link=message.json['reply_markup']['inline_keyboard'][0][0]['url']
+        functions.add_item(name, cost, link, message.chat.id)
+    except:
+        bot.send_message(message.chat.id,"Вы переслали товар, который я не могу отслеживать =(\n")
 @bot.message_handler(func=lambda message: True)
 def message_handler(message):
     print(message.reply_to_message)
@@ -79,10 +88,14 @@ def process_title(message):
                                           "\n 1) Напишите название товара, мы пробьем его по базам и покажем каике ценники мы смогли найти\n"
                                           "\n 2) Перешлите сообщение с товаром, который вас заинтересовал, чтобы добавить его отслеживание в личный кабинет\n"
                                           "\n 3) Отправьте команду /profile, чтобы получить информацию о товарах, которые вы пересылали\n"
+                                          "\n 4) Отправьте команду /delete номер в списке в профиле, чтобы удалить товар из отслеживающихся\n"
                                           "\nПод базой данных мы имеем ввиду сайты: citilink, ozon, price_ru\n"
                                           "Этот список будет пополняться\n"
                                           "\n Разработкой бота занималась команда Тульский пряник\n Контактный email: nikitanaz12@gmail.com"))
     else:
+        if (message.text[0]=='/'):
+            bot.send_message(message.chat.id, ("Такой команды не существует"))
+            return
         if (len(message.text) <= 5):
             bot.send_message(message.chat.id, ("Вы ввели данные, по которым мы не можем реализовать поиск=("))
             return
@@ -101,11 +114,11 @@ def process_title(message):
 def findAns(name):
     name=str(name).lower()
     arr={"answer":[]}
-    sites=["https://www.citilink.ru/search/?text=","https://price.ru/search/?query=","https://www.ozon.ru/search/?text="]
+    sites=["https://www.ozon.ru/search/?text=","https://www.citilink.ru/search/?text=","https://price.ru/search/?query="],
     for i in sites:
-        HTML = seleniumReal.getHTML(i + name)
         match(i[0:23]):
             case("https://www.citilink.ru"):
+                HTML = seleniumReal.getHTML(i + name)
                 for k in ctlpars(HTML):
                     if k['name'].find(name.split()[0]):
                         arr["answer"].append(k)
@@ -121,15 +134,6 @@ def findAns(name):
     #[{"price":"","link":"","name":""}]
     arr["answer"].sort(key=lambda x:int(x['price']))
     answer = arr["answer"][:10]
-    '''
-    for i in arr["answer"]:
-        if(len(answer)<10):
-            answer.append(i)
-        else:
-            for _ in range(10):#Здесь можно исполльзовать че-нибудь сортированное, но сейчас 12 ночи...
-                if(int(i["price"])<int(answer[_]["price"])):
-                    answer[_] = i
-    '''
     return(answer)
 
 if __name__ == '__main__':

@@ -11,5 +11,15 @@ def getHTML(URL):
     driver.quit()
     return(html)
 
+def getHTMLozon(URL):
+    driver = webdriver.Chrome()
+    driver.get(URL)
+    time.sleep(1.5)
+    html = driver.page_source
+    f = open('test.txt', 'w', encoding='utf-8')
+    f.write(html)
+    driver.quit()
+    return(html)
+
 #getHTML("https://www.ozon.ru/search/?from_global=true&text=браслет")
 

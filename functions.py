@@ -23,12 +23,14 @@ def update(current_cost):
             item = session.query(Item).filter(Item.id == it).first()
             if item.minimal < 0.95 * costs[it]:
                 message += f"Акция! Товар {item.name} подешевел\n"
+
         # send telegram message #######################
         # if message:                                 #
         #     send_message(user.telegram_id, message) #
         ###############################################
     session.close()
-    return (message)
+    return message
+
 
 
 def profile(user_id):
@@ -37,18 +39,34 @@ def profile(user_id):
     user = session.query(User).filter(User.telegram_id == user_id).first()
     user_list = user.items.split("|")
     message = ""
+    count=1
     for item_id in user_list:
         if item_id == "": continue
         item_id = int(item_id)
         item = session.query(Item).filter(Item.id == item_id).first()
-        message += item.name + "\n" +item.minimal + "\n" + item.link + "\n"
-
+        message +=str(count)+") Название: " + item.name + "\n Стоимость товара: " +item.minimal + "\n Ссылка на товар: " + f"Нажми <a href='{item.link}'>здесь</a>"+ "\n\n"
+        count+=1
     ####### send message #############
     # if message:
     #     send_message(user.telegram_id, "Список ваших товаров:\n" + message)
     ####################################
     session.close()
     return (message)
+
+def delete_item(user_id, num):
+    num=int(num)
+    num -= 1
+
+    session = db_session.create_session()
+    user = session.query(User).filter(User.telegram_id == user_id).first()
+    if len(user.items_cost.split('|')) < num:
+        return
+    user.items_cost = '|'.join(user.items_cost.split('|')[:num] + user.items_cost.split('|')[num + 1:])
+    user.items = '|'.join(user.items.split('|')[:num] + user.items.split('|')[num + 1:])
+
+    session.commit()
+    session.close()
+
 
 def add_item(name, cost, link, user_id):
     name, cost, link, user_id = map(str, [name, cost, link, user_id])
@@ -65,10 +83,9 @@ def add_item(name, cost, link, user_id):
     if not user:
         add_user(user_id)
     item = session.query(Item).filter(Item.name == name).first()
-    print(item.id)
     user = session.query(User).filter(User.telegram_id == user_id).first()
-    user.items += "|" + str(item.id)
-    user.items_cost += "|" + cost
+    user.items += ("|" if user.items != '' else "") + str(item.id)
+    user.items_cost += ("|" if user.items_cost != '' else "") + cost
 
     session.commit()
     session.close()
@@ -86,4 +103,3 @@ def add_user(telegram_id):
 
     session.commit()
     session.close()
-
