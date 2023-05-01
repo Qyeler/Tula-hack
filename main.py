@@ -9,8 +9,8 @@ import sys
 import io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-bot = telebot.TeleBot("6163085124:AAFcH7JLOfSmFTi8WmdhwdodlssgeVi3Z_Q")
-admin_key="1055763032"
+bot = telebot.TeleBot("")
+admin_key=""
 @bot.message_handler(commands=['profile'])
 def profile_handler(message):
     bot.send_message(message.chat.id, "Ваш профиль:\n"+functions.profile(message.chat.id)+"\n",disable_web_page_preview=True,parse_mode="HTML")
